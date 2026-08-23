@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+option csharp_namespace = "Library.Contracts";
+
+package library;
+
+import "google/protobuf/timestamp.proto";
+
+service LibraryService {
+  // Inventory insights
+  rpc GetMostBorrowedBooks (MostBorrowedRequest) returns (MostBorrowedResponse);
+
+  // User activity
+  rpc GetTopBorrowers (TopBorrowersRequest) returns (TopBorrowersResponse);
+  rpc GetReadingPace (ReadingPaceRequest) returns (ReadingPaceResponse);
+
+  // Borrowing patterns
+  rpc GetAlsoBorrowed (AlsoBorrowedRequest) returns (AlsoBorrowedResponse);
+
+  // Lending operations
+  rpc BorrowBook (BorrowRequest) returns (BorrowResponse);
+  rpc ReturnBook (ReturnRequest) returns (ReturnResponse);
+}
+
+// ---------- Inventory ----------
+
+message MostBorrowedRequest {
+  int32 limit = 1;
+  google.protobuf.Timestamp from_utc = 2;
+  google.protobuf.Timestamp to_utc = 3;
+}
+
+message BookStat {
+  int64 book_id = 1;
+  string title = 2;
+  string author = 3;
+  int32 borrow_count = 4;
+}
+
+message MostBorrowedResponse {
+  repeated BookStat books = 1;
+}
+
+// ---------- User activity ----------
+
+message TopBorrowersRequest {
+  int32 limit = 1;
+  google.protobuf.Timestamp from_utc = 2;
+  google.protobuf.Timestamp to_utc = 3;
+}
+
+message BorrowerStat {
+  int64 borrower_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  int32 borrow_count = 4;
+}
+
+message TopBorrowersResponse {
+  repeated BorrowerStat borrowers = 1;
+}
+
+message ReadingPaceRequest {
+  int64 borrower_id = 1;
+}
+
+message LoanPace {
+  int64 book_id = 1;
+  string title = 2;
+  int32 pages = 3;
+  int32 days = 4;
+  double pages_per_day = 5;
+}
+
+message ReadingPaceResponse {
+  int64 borrower_id = 1;
+  // False when the borrower has no completed loans.
+  bool has_data = 2;
+  double average_pages_per_day = 3;
+  int32 loans_considered = 4;
+  repeated LoanPace breakdown = 5;
+}
+
+// ---------- Borrowing patterns ----------
+
+message AlsoBorrowedRequest {
+  int64 book_id = 1;
+  int32 limit = 2;
+}
+
+message RelatedBook {
+  int64 book_id = 1;
+  string title = 2;
+  string author = 3;
+  // Number of distinct borrowers who took both this book and the requested one.
+  int32 shared_readers = 4;
+}
+
+message AlsoBorrowedResponse {
+  repeated RelatedBook books = 1;
+}
+
+// ---------- Lending ----------
+
+message BorrowRequest {
+  int64 borrower_id = 1;
+  int64 book_id = 2;
+}
+
+message BorrowResponse {
+  int64 loan_id = 1;
+  int64 book_copy_id = 2;
+  google.protobuf.Timestamp borrowed_at_utc = 3;
+}
+
+message ReturnRequest {
+  int64 loan_id = 1;
+}
+
+message ReturnResponse {
+  int64 loan_id = 1;
+  google.protobuf.Timestamp returned_at_utc = 2;
+  // True when the loan was already closed — the call is idempotent.
+  bool already_returned = 3;
+}

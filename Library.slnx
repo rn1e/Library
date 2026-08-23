@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="Library.Api/Library.Api.csproj" />
+  <Project Path="Library.Contracts/Library.Contracts.csproj" />
+  <Project Path="Library.Service/Library.Service.csproj" />
+  <Project Path="Library.Tests.Integration/Library.Tests.Integration.csproj" />
+  <Project Path="Library.Tests.Unit/Library.Tests.Unit.csproj" />
+</Solution>
