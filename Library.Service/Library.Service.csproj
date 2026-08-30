@@ -9,8 +9,4 @@
     <ProjectReference Include="..\Library.Contracts\Library.Contracts.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Protos\" />
-  </ItemGroup>
-
 </Project>

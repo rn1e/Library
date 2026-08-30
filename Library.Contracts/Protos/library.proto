@@ -68,7 +68,8 @@ message LoanPace {
   int64 book_id = 1;
   string title = 2;
   int32 pages = 3;
-  int32 days = 4;
+  // Fractional: a loan returned after 36 hours lasted 1.5 days, not 1.
+  double days = 4;
   double pages_per_day = 5;
 }
 

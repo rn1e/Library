@@ -1,5 +1,71 @@
 @Library.Api_HostAddress = http://localhost:5006
 
-### Most borrowed books
-GET {{Library.Api_HostAddress}}/api/books/most-borrowed
+### The ids below are the ones the Development seed produces on a fresh database.
+### Books:     1 Dune, 2 Neuromancer, 3 Snow Crash, 5 Foundation, 7 Hyperion, 10 A Fire Upon the Deep
+### Borrowers: 1 Alice, 2 Bob, 3 Clara, 4 Daniel, 5 Eve (nothing returned yet), 6 Frank (no loans)
+
+### Inventory: what are the most borrowed books?
+GET {{Library.Api_HostAddress}}/api/books/most-borrowed?limit=5
 Accept: application/json
+
+### The same question restricted to the seeded window. Five seeded loans start before it and drop out.
+GET {{Library.Api_HostAddress}}/api/books/most-borrowed?limit=5&from=2026-08-01T00:00:00Z&to=2026-08-31T00:00:00Z
+Accept: application/json
+
+### Rejected before it reaches the service: limit is capped at 100. Expect 400.
+GET {{Library.Api_HostAddress}}/api/books/most-borrowed?limit=1000
+Accept: application/json
+
+### User activity: who borrowed the most in the seeded window?
+GET {{Library.Api_HostAddress}}/api/borrowers/top?limit=5&from=2026-08-01T00:00:00Z&to=2026-08-31T00:00:00Z
+Accept: application/json
+
+### Reading pace for Alice: 412 pages over 7 days plus 204 over a same-day loan, so 616 / 8 = 77 pages a day.
+GET {{Library.Api_HostAddress}}/api/borrowers/1/reading-pace
+Accept: application/json
+
+### Eve has only an open loan, so there is nothing to measure: averagePagesPerDay is null.
+GET {{Library.Api_HostAddress}}/api/borrowers/5/reading-pace
+Accept: application/json
+
+### An id nobody has. Expect 404.
+GET {{Library.Api_HostAddress}}/api/borrowers/999999/reading-pace
+Accept: application/json
+
+### Borrowing patterns: what else did Dune's readers take out?
+GET {{Library.Api_HostAddress}}/api/books/1/also-borrowed?limit=5
+Accept: application/json
+
+### Lending: borrow a book. Expect 201 and a loan id.
+POST {{Library.Api_HostAddress}}/api/loans
+Content-Type: application/json
+
+{
+  "borrowerId": 6,
+  "bookId": 10
+}
+
+### Hyperion has a single copy and Alice still has it out. Expect 409 — the book exists,
+### it is the state that conflicts.
+POST {{Library.Api_HostAddress}}/api/loans
+Content-Type: application/json
+
+{
+  "borrowerId": 6,
+  "bookId": 7
+}
+
+### A book that does not exist. Expect 404 rather than 409.
+POST {{Library.Api_HostAddress}}/api/loans
+Content-Type: application/json
+
+{
+  "borrowerId": 6,
+  "bookId": 999999
+}
+
+### Return the loan created above — replace 20 with the loanId that came back.
+POST {{Library.Api_HostAddress}}/api/loans/20/return
+
+### Call it again. Still 200, now with "alreadyReturned": true and the original date.
+POST {{Library.Api_HostAddress}}/api/loans/20/return
